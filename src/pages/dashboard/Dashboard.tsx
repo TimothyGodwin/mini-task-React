@@ -14,6 +14,7 @@ import showNotification from '../../components/notification/Notification';
 import DeleteModal from '../../components/deleteModal/DeleteModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserList } from '../../globalStore/slices/thunks';
+import { setDeleteData } from '../../globalStore/slices/IdSlices';
 
 const Dashboard: React.FC = () => {
     const deleteUser = useApiRequests('crudUsers', 'delete');
@@ -50,9 +51,7 @@ const Dashboard: React.FC = () => {
         setOpenDeleteModal(false);
         setOpenUserModal(false);
         setEditUser(null);
-        setCurrentPage(1)
-        if (status)
-            dispatch(fetchUserList(1));
+        // setCurrentPage(1)
     };
 
     const filteredData = useMemo(() => {
@@ -72,8 +71,8 @@ const Dashboard: React.FC = () => {
         const params = { id: editUser?.id };
         try {
             const response = await deleteUser('', {}, params);
+            dispatch(setDeleteData(params));
             showNotification.SUCCESS('User deleted successfully');
-            dispatch(fetchUserList(1));
         } catch (error) {
             showNotification.ERROR('Something went wrong');
         } finally {
