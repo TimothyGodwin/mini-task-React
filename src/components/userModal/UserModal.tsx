@@ -7,6 +7,8 @@ import { schemaUser } from "../../utils/formHelpers";
 import useApiRequests from "../../api/useApiRequests";
 import Loader from "../loader/Loader";
 import showNotification from "../notification/Notification";
+import { useDispatch } from "react-redux";
+import { setData } from "../../globalStore/slices/IdSlices";
 
 interface UserModalProps {
     open: boolean;
@@ -14,7 +16,8 @@ interface UserModalProps {
     editUser: UserType | null;
 }
 
-const UserModal: React.FC<UserModalProps> = ({ open, handleClose, editUser }) => {
+const UserModal: React.FC<UserModalProps> = ({ open, handleClose, editUser }: any) => {
+    const dispatch: any = useDispatch();
     const createUsers = useApiRequests('crudUsers', 'post');
     const updateUsers = useApiRequests('crudUsers', 'put');
     const [initialValues, setInitialValues] = useState<UserType | null>(editUser);
@@ -37,7 +40,8 @@ const UserModal: React.FC<UserModalProps> = ({ open, handleClose, editUser }) =>
             const response = await apicall(payload, {}, { id });
             if (response?.id) {
                 showNotification.SUCCESS(`User ${id ? 'Updated' : 'Added'} successfully`);
-                handleClose(true);
+                handleClose(response);
+                dispatch(setData(response));
             }
         } catch (error) {
             showNotification.ERROR('Something went wrong');
