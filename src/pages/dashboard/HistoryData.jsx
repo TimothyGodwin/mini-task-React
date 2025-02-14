@@ -1,7 +1,10 @@
 import { Table } from 'antd';
 import { getData } from './helper'
+import { useNavigate } from 'react-router-dom';
+import Button from '../../components/button/Button';
 
 const HistoryData = () => {
+    const navigate = useNavigate();
     const userTrack = getData()
 
     const columns = [
@@ -20,6 +23,7 @@ const HistoryData = () => {
 
     return (
         <div>
+            <Button type='normal' onClick={() => navigate("/dashboard")}>Dashboard</Button>
             <Table
                 columns={columns}
                 dataSource={userTrack}
