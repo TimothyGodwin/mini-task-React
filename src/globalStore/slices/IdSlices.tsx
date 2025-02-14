@@ -27,11 +27,16 @@ const idSlice = createSlice({
         },
         setDeleteData: (state, action) => {
             const idToDelete = action.payload.id;
-            console.log("idToDelete ", idToDelete)
             const indexToDelete = state.data.findIndex((item: any) => item.id === idToDelete);
             if (indexToDelete !== -1) {
                 state.data.splice(indexToDelete, 1);
             }
+        },
+        setDeleteDataMulti: (state, action) => {
+            const idToDelete = action.payload;
+            console.log("idsToDelete ", idToDelete);
+            state.data = state.data.filter(item => !idToDelete.includes(item.id));
+
         }
     },
     extraReducers: builder => {
@@ -51,5 +56,5 @@ const idSlice = createSlice({
     },
 });
 
-export const { setToken, setData, setDeleteData } = idSlice.actions;
+export const { setToken, setData, setDeleteData, setDeleteDataMulti } = idSlice.actions;
 export default idSlice.reducer;
