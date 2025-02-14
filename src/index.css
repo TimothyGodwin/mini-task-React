@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --header-background: #AAB99A;
+  }
+  
+  [data-theme='dark'] {
+    --header-background: #3C3D37;
+  }
