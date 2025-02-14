@@ -17,10 +17,12 @@ import { fetchUserList } from '../../globalStore/slices/thunks';
 import { setDeleteData } from '../../globalStore/slices/IdSlices';
 import VirtualScroll from './VTable';
 import { getData } from './helper';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
     // const userTrack = JSON.parse(sessionStorage.getItem('trackActivity') || '');
     const userTrack = getData()
+    const navigate = useNavigate();
     const { apiCalls, loading: fectchLoading, error }: any = useApiRequests('crudUsers', 'delete');
     const dispatch: any = useDispatch();
     const { data, total, per_page, loading } = useSelector((state: any) => state.id);
@@ -106,7 +108,8 @@ const Dashboard: React.FC = () => {
             {fectchLoading && <Loader />}
             <div className="bg-white-btn rounded-lg shadow">
                 <div className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center">
-                    <h1 className="text-xl font-semibold">Users</h1>
+                    <h1 className="text-xl font-semibold mr-2">Users</h1>
+                    <CustomButton type='normal' onClick={() => navigate("/history")}>History</CustomButton>
                     <div className="flex flex-col sm:flex-row sm:gap-2 sm:ml-auto mt-3 sm:mt-0">
                         <Input
                             placeholder="Search..."
