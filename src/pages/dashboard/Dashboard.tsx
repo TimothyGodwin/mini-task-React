@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, act } from 'react';
 import { Input, Button, Pagination } from 'antd';
 import { SearchOutlined, AppstoreOutlined, TableOutlined } from '@ant-design/icons';
 import CustomButton from '../../components/button/Button';
@@ -15,9 +15,13 @@ import DeleteModal from '../../components/deleteModal/DeleteModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserList } from '../../globalStore/slices/thunks';
 import { setDeleteData } from '../../globalStore/slices/IdSlices';
+import VirtualScroll from './VTable';
+import { getData } from './helper';
 
 const Dashboard: React.FC = () => {
-    const deleteUser = useApiRequests('crudUsers', 'delete');
+    // const userTrack = JSON.parse(sessionStorage.getItem('trackActivity') || '');
+    const userTrack = getData()
+    const { apiCalls, loading: fectchLoading, error }: any = useApiRequests('crudUsers', 'delete');
     const dispatch: any = useDispatch();
     const { data, total, per_page, loading } = useSelector((state: any) => state.id);
     const [searchText, setSearchText] = useState<string>('');
@@ -29,6 +33,7 @@ const Dashboard: React.FC = () => {
     const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
 
     useEffect(() => {
+        console.log("userTrack : ", userTrack)
         dispatch(fetchUserList(1));
     }, []);
 
@@ -39,6 +44,7 @@ const Dashboard: React.FC = () => {
     };
 
     const handleUseAction = (action: string, user: UserType | null) => {
+        console.log("action : ", action, user)
         setEditUser(user);
         if (action === 'edit' || action === 'add') {
             setOpenUserModal(true);
@@ -55,14 +61,20 @@ const Dashboard: React.FC = () => {
     };
 
     const filteredData = useMemo(() => {
-        return data.filter(user =>
-            user?.first_name.toLowerCase().includes(searchText?.toLowerCase()) ||
-            user?.last_name.toLowerCase().includes(searchText?.toLowerCase())
-        );
+        return data
+            .filter(user =>
+                user?.first_name?.toLowerCase().includes(searchText?.toLowerCase()) ||
+                user?.last_name?.toLowerCase().includes(searchText?.toLowerCase()) ||
+                user?.email?.toLowerCase().includes(searchText?.toLowerCase())
+            )
+            .map((user) => ({
+                ...user,
+                key: user.id
+            }));
     }, [data, searchText]);
 
     const debouncedSearch = useCallback(
-        debounce((value: string) => setSearchText(value), 500),
+        debounce((value: string) => setSearchText(value), 300),
         []
     );
 
@@ -70,7 +82,10 @@ const Dashboard: React.FC = () => {
         setLoader(true);
         const params = { id: editUser?.id };
         try {
-            const response = await deleteUser('', {}, params);
+            const response = await apiCalls('', {}, params);
+            const trackActivity = [...userTrack,
+            { id: Date.now(), action: `User Deleted with Id ${editUser?.id}` }];
+            sessionStorage.setItem('trackActivity', JSON.stringify(trackActivity));
             dispatch(setDeleteData(params));
             showNotification.SUCCESS('User deleted successfully');
         } catch (error) {
@@ -88,7 +103,7 @@ const Dashboard: React.FC = () => {
 
     return (
         <div className="p-4 h-[50vh]">
-            {loader || loading && <Loader />}
+            {fectchLoading && <Loader />}
             <div className="bg-white-btn rounded-lg shadow">
                 <div className="p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center">
                     <h1 className="text-xl font-semibold">Users</h1>
@@ -136,7 +151,8 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 {isTableSelected ? (
-                    <TableView data={filteredData} handleUseAction={handleUseAction} />
+                    <VirtualScroll data={filteredData} handleUseAction={handleUseAction} />
+                    // <TableView data={filteredData} handleUseAction={handleUseAction} />
                 ) : (
                     <CardView data={filteredData} handleUseAction={handleUseAction} />
                 )}
