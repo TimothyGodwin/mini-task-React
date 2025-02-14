@@ -1,6 +1,7 @@
 import { AxiosInstance } from 'axios';
 import { API_CONFIG } from './endpoint';
 import useCustomAxios from './useCustomAxios';
+import { useState } from 'react';
 
 interface QueryParams {
     [key: string]: object;
@@ -13,10 +14,14 @@ interface ApiConfig {
 }
 
 const useApiRequests = (apiName: string, method: ApiMethod) => {
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(null)
     const axiosInstance: AxiosInstance = useCustomAxios();
     const api: ApiConfig | undefined = API_CONFIG[apiName];
 
     const apiCalls = async (payload: any = null, queryParams: QueryParams = {}, pathParams: any = {}) => {
+        setLoading(true);
+        setError(null);
         if (!api) {
             throw new Error('API configuration not found');
         }
@@ -43,11 +48,16 @@ const useApiRequests = (apiName: string, method: ApiMethod) => {
 
             return response.data;
         } catch (error) {
+            setError(error);
             throw error;
+        } finally {
+            setTimeout(() => {
+                setLoading(false);
+            }, 2000)
         }
     };
 
-    return apiCalls;
+    return { apiCalls, loading, error };;
 };
 
 export default useApiRequests;
