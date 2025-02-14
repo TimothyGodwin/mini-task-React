@@ -9,6 +9,7 @@ import Loader from "../loader/Loader";
 import showNotification from "../notification/Notification";
 import { useDispatch } from "react-redux";
 import { setData } from "../../globalStore/slices/IdSlices";
+import { getData } from "../../pages/dashboard/helper";
 
 interface UserModalProps {
     open: boolean;
@@ -17,9 +18,10 @@ interface UserModalProps {
 }
 
 const UserModal: React.FC<UserModalProps> = ({ open, handleClose, editUser }: any) => {
+    const userTrack = getData();
     const dispatch: any = useDispatch();
-    const createUsers = useApiRequests('crudUsers', 'post');
-    const updateUsers = useApiRequests('crudUsers', 'put');
+    const { apiCalls: createUsers } = useApiRequests('crudUsers', 'post');
+    const { apiCalls: updateUsers } = useApiRequests('crudUsers', 'put');
     const [initialValues, setInitialValues] = useState<UserType | null>(editUser);
     const [loader, setLoader] = useState(false);
 
@@ -40,6 +42,9 @@ const UserModal: React.FC<UserModalProps> = ({ open, handleClose, editUser }: an
             const response = await apicall(payload, {}, { id });
             if (response?.id) {
                 showNotification.SUCCESS(`User ${id ? 'Updated' : 'Added'} successfully`);
+                const trackActivity = [...userTrack,
+                { id: Date.now(), action: `User ${id ? 'Edited' : 'Created'} with Id ${response?.id}` }];
+                sessionStorage.setItem('trackActivity', JSON.stringify(trackActivity));
                 handleClose(response);
                 dispatch(setData(response));
             }
