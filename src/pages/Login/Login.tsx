@@ -11,11 +11,13 @@ import showNotification from './../../components/notification/Notification';
 import { useDispatch } from "react-redux";
 import { setToken } from "../../globalStore/slices/IdSlices";
 import Loader from './../../components/loader/Loader';
+import { getData, saveData } from "../dashboard/helper";
 
 const Login = () => {
+    const userTrack = getData();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const loginAPI = useApiRequests('login', 'post');
+    const { apiCalls: loginAPI }: any = useApiRequests('login', 'post');
     const [loader, setLoader] = useState(false);
 
     const initialValues: LoginFormValues = {
@@ -25,12 +27,21 @@ const Login = () => {
     };
 
     const handleSubmit = async (values: LoginFormValues) => {
+
         setLoader(true);
         try {
             const response = await loginAPI(values);
+            console.log("response : ", response)
             if (response?.token) {
+                console.log("userTrack : ", userTrack)
                 showNotification.SUCCESS('Login Successful');
                 dispatch(setToken(response?.token));
+                let trackActivity = [{ id: Date.now(), action: 'User Login' }];
+                if (Array.isArray(userTrack)) {
+                    trackActivity = [...userTrack, ...trackActivity];
+                }
+                saveData(trackActivity)
+                // sessionStorage.setItem('trackActivity', JSON.stringify(trackActivity));
                 navigate("/dashboard");
             }
         } catch (error) {
